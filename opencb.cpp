@@ -49,10 +49,42 @@ void opencb::io::SwapPrint(vector<string> data,fn line,fn perChar){
         ++index;
         opencb::base::SetConsolePosition(index);//Back to origin,default func(0,0)
     }
-    opencb::base::SetConsolePosition(0,data.size()-1);
+    opencb::base::SetConsolePosition(0,data.size());
 }
 
 
 void opencb::io::SwapPrintEx(vector<vector<string>> d,fn xNew,fn yNew){
     for(vector<string> & s : d)opencb::io::SwapPrint(s,xNew,yNew);
+}
+
+void opencb::base::SetColor(int fore,int backg){
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),fore | (backg*80));
+}
+
+
+void opencb::io::EasyPrint(vector<string> d,fn xNew,fn yNew){
+    for(unsigned int i = 0;i < d.size();++i){
+        if(yNew)if(yNew(i,0,d))return;
+        for(unsigned int j = 0;j < d[i].size();++j){
+            if(xNew)if(xNew(i,j,d))return;
+            cout << d[i][j];
+        }
+        cout << endl;
+    }
+}
+
+
+void opencb::io::clrscr(){
+	COORD coordScreen = { 0, 0 };
+	DWORD cCharsWritten;
+	CONSOLE_SCREEN_BUFFER_INFO csbi;
+	DWORD dwConSize;
+	HANDLE hConsole = GetStdHandle( STD_OUTPUT_HANDLE );
+
+	GetConsoleScreenBufferInfo( hConsole, &csbi );
+	dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+	FillConsoleOutputCharacter( hConsole, TEXT(' '), dwConSize, coordScreen, &cCharsWritten );
+	GetConsoleScreenBufferInfo( hConsole, &csbi );
+	FillConsoleOutputAttribute( hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten );
+	SetConsoleCursorPosition( hConsole, coordScreen );
 }

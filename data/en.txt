@@ -1,0 +1,25 @@
+---------------------------Errtale----------------------------
+  A fan game of Undertale,whose purpose is to make a f-
+antastic game that fully uses Windows System's functio-
+ns.Therefore,this game might break your computer or s-
+care you a bit.
+  Enjoy the game.(^-^)
+-------------------------------------------------------------
+           Author:YSL aaaa0ggmc RokonDreaming
+                 Language Used:C++
+                 Dependence:None
+                 Platform:Windows
+Long long ago,there were two races--HUMANS and MONSTERS
+One day,war broke out between the two races
+At last,the human won and sealed the monsters undergound with a magic spell
+Incredibly,the monsters built a civilization undergound
+They had had a peaceful life for a quite a long time
+In 201X,however,a small child fell into Mt.Ebbot
+And the child impossibly led the civilization become friendly with humans
+While in 202X,things changed,a human became evil and killed all of the human
+And he also killed all of the monsters except........
+me!!!!!
+And you,are the guy who is evil.......
+My friend,my family,my world were all destroyed by you,a silly child.....
+Good bye.......
+Let's go to the theme...

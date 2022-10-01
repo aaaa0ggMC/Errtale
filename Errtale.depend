@@ -1,14 +1,17 @@
 # depslib dependency file v1.0
-1664531685 source:e:\projects\coc++\errtale\errtale\main.cpp
+1664597122 source:e:\projects\coc++\errtale\errtale\main.cpp
 	<iostream>
+	<stdlib.h>
+	<fstream>
+	<conio.h>
 	"opencb.h"
 
-1664532272 e:\projects\coc++\errtale\errtale\opencb.h
+1664596568 e:\projects\coc++\errtale\errtale\opencb.h
 	<windows.h>
 	<iostream>
 	<vector>
 	<string>
 
-1664532272 source:e:\projects\coc++\errtale\errtale\opencb.cpp
+1664596547 source:e:\projects\coc++\errtale\errtale\opencb.cpp
 	"opencb.h"
 
