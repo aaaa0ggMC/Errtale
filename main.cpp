@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <conio.h>
+#include <SFML/Audio.hpp>
 #include "opencb.h"
 #define CN "data/cn.txt"
 #define EN "data/en.txt"
@@ -11,8 +12,10 @@
 using namespace std;
 using namespace opencb::io;
 using namespace opencb::base;
+using namespace sf;
 
 int sleept= 80;
+sf::Music music;
 
 bool fnxx(int,int,vector<string>&){
     Sleep(sleept);
@@ -21,6 +24,12 @@ bool fnxx(int,int,vector<string>&){
 
 bool fndd(int,int,vector<string>&){
     Sleep(sleept/2);
+    return false;
+}
+
+bool fnss(int,int,vector<string>&){
+    Sleep(sleept);
+    music.setPlayingOffset(music.getPlayingOffset() - sf::milliseconds(sleept + 5));
     return false;
 }
 
@@ -97,6 +106,10 @@ int main()
             strings.push_back(l);
         }
     }
+    if(!music.openFromFile("data/OnceUponATime.ogg")){
+        MessageBox(gameWin,"Game music OnceUponATime.ogg has lost","Fatal Error",MB_OK);
+        exit(-1);
+    }
     SetWindowLong(gameWin,GWL_STYLE,GetWindowLong(gameWin,GWL_STYLE) & ~WS_SIZEBOX & ~WS_MAXIMIZEBOX & ~WS_MINIMIZEBOX);
     Sleep(1000);
     if(IsKeyPressed(VK_SHIFT) != TRUE){
@@ -104,23 +117,30 @@ int main()
         SwapPrint(subvec(strings,0,10),fnxx);
         Sleep(1000);
         clrscr();
-        sleept = 20;
-        SwapPrint(subvec(strings,11,19),fnxx,fndd);
+        music.play();
+        sleept = 200;
+        EasyPrint(subvec(strings,11,19),fndd,fnxx);
         Sleep(4500);
         clrscr();
         SetColor(CL_RED);
-        sleept = 80;
-        EasyPrint(subvec(strings,20,23),fnxx,fndd);
+        sleept = 40;
+        EasyPrint(subvec(strings,20,23),fnss,fnxx);
         Sleep(800);
         clrscr();
         SetColor();
+        music.stop();
     }
     sleept = 50;
     EasyPrint(subvec(strings,24,24),fnxx);
     Sleep(100);
     system("cls");
     ShowWindow(gameWin,SW_HIDE);
-
+    if(!music.openFromFile("data/Sans.ogg")){
+        MessageBox(gameWin,"Game music Sans.ogg has lost","Fatal Error",MB_OK);
+        exit(-1);
+    }
+    music.play();
     ShowWindow(gameWin,SW_SHOW);
+    system("pause");
     return 0;
 }
