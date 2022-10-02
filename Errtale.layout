@@ -2,19 +2,27 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Release" />
+	<File name="Generic.h" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="505" topLine="1" />
+		</Cursor>
+	</File>
 	<File name="opencb.h" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1320" topLine="16" />
+			<Cursor1 position="208" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="opencb.cpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2372" topLine="55" />
+			<Cursor1 position="47" topLine="64" />
 		</Cursor>
 	</File>
 	<File name="main.cpp" open="1" top="1" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4148" topLine="119" />
+			<Cursor1 position="9150" topLine="235" />
 		</Cursor>
+		<Folding>
+			<Collapse line="144" />
+		</Folding>
 	</File>
 </CodeBlocks_layout_file>

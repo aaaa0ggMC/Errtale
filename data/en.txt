@@ -4,22 +4,25 @@ antastic game that fully uses Windows System's functio-
 ns.Therefore,this game might break your computer or s-
 care you a bit.
   Enjoy the game.(^-^)
--------------------------------------------------------------
-           Author:YSL aaaa0ggmc RokonDreaming
+[Tip:Delete data/config.cfg to reset game  删去data/config.cfg来重置游戏]
+          Author:YSL aaaa0ggmc RokonDreaming
                  Language Used:C++
-                 Dependence:None
+          Dependence:SFML OpenAL StdC++
                  Platform:Windows
 Long long ago,there were two races--HUMANS and MONSTERS
 One day,war broke out between the two races
 At last,the human won and sealed the monsters undergound with a magic spell
 Incredibly,the monsters built a civilization undergound
-They had had a peaceful life for a quite a long time
+They have had a peaceful life for a quite some time
 In 201X,however,a small child fell into Mt.Ebbot
-And the child impossibly led the civilization become friendly with humans
+And the child led the civilization become friendly with humans
 While in 202X,things changed,a human became evil and killed all of the human
 And he also killed all of the monsters except........
 me!!!!!
-And you,are the guy who is evil.......
+And you,are the guy...........
 My friend,my family,my world were all destroyed by you,a silly child.....
 Good bye.......
 Let's go to the theme...
+---------------------------------------------------------------------------BUTCHER OVER----------------------------------------------------------
+                                                                                    *Don't Give up!Keep your determination
+                                                                                   *Because you will die harder than this time!

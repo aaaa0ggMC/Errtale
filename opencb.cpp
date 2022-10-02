@@ -1,6 +1,7 @@
 #include "opencb.h"
 
 using namespace std;
+//extern bool solution2;
 
 void opencb::base::SetConsolePosition(int x,int y,HANDLE h){
     SetConsoleCursorPosition(h,{(short)x,(short)y});
@@ -28,7 +29,16 @@ template<typename Func> void opencb::io::SwapPrint_t(vector<string>& data,Func l
     }
 }
 
-void opencb::io::SwapPrint(vector<string> data,fn line,fn perChar){
+
+inline GString BlankWith(GString &in,size_t i){
+    GString ret = Str("");
+    for(unsigned int j = 0;j < in.size()-i;++j){
+        ret += Str(" ");
+    }
+    return ret;
+}
+
+void opencb::io::SwapPrint(vector<GString> data,fn line,fn perChar){
     bool _empty;
     unsigned int index = 0;
     opencb::base::SetConsolePosition();
@@ -36,12 +46,16 @@ void opencb::io::SwapPrint(vector<string> data,fn line,fn perChar){
         _empty = true;
         if(line)if(line(index,0,data))return;
         for(int idx = 0;idx < (int)data.size();++idx){
-            string & l = data[idx];
+            GString & l = data[idx];
             if(l.size() > index){
                 _empty = false;
                 //Draw elements Here
                 if(perChar)if(perChar(index,idx,data))return;
-                cout << l[index];
+                opencb::base::SetConsolePosition(0,idx);
+                sout << data[idx];
+                opencb::base::SetConsolePosition(index+1,idx);
+                //Build a blank
+                sout << BlankWith(data[idx],index);
             }
             opencb::base::SetConsolePosition(index,idx+1);
         }
@@ -53,23 +67,26 @@ void opencb::io::SwapPrint(vector<string> data,fn line,fn perChar){
 }
 
 
-void opencb::io::SwapPrintEx(vector<vector<string>> d,fn xNew,fn yNew){
-    for(vector<string> & s : d)opencb::io::SwapPrint(s,xNew,yNew);
+void opencb::io::SwapPrintEx(vector<vector<GString>> d,fn xNew,fn yNew){
+    for(vector<GString> & s : d)opencb::io::SwapPrint(s,xNew,yNew);
 }
 
 void opencb::base::SetColor(int fore,int backg){
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),fore | (backg*80));
 }
 
-
-void opencb::io::EasyPrint(vector<string> d,fn xNew,fn yNew){
+void opencb::io::EasyPrint(vector<GString> d,fn xNew,fn yNew){
     for(unsigned int i = 0;i < d.size();++i){
         if(yNew)if(yNew(i,0,d))return;
         for(unsigned int j = 0;j < d[i].size();++j){
             if(xNew)if(xNew(i,j,d))return;
-            cout << d[i][j];
+            opencb::base::SetConsolePosition(0,i);
+            sout << d[i];
+            opencb::base::SetConsolePosition(j+1,i);
+            //Build a blank
+            sout << BlankWith(d[i],j);
         }
-        cout << endl;
+        sout << endl;
     }
 }
 
