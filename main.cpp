@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <conio.h>
+#include <thread>
 #include <SFML/Audio.hpp>
 #include <time.h>
 #include "opencb.h"
@@ -48,6 +49,12 @@ struct Bullet{
     virtual ~Bullet(){}
 };
 
+struct Config{
+    int lang;
+    int deathTime;
+};
+Config config = {0,0};
+
 
 unsigned int sysx,sysy;
 string ts = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()~`_-+={}:\"<>?,./;\'\\|[]";
@@ -79,14 +86,39 @@ struct TextBullet : public Bullet{
 };
 HDC TextBullet::DC = GetDC(NULL);
 
-vector<Bullet*> bullets;
-
-struct ResourceLock{
-    ~ResourceLock(){
-        for(Bullet * b : bullets)delete b;
+struct IconBullet : public Bullet{
+    static HANDLE shell32;
+    HICON thisIcon;
+    float xcr,ycr;
+    IconBullet(){
+        if(rand()%100 >= 50){
+            xcr = rand()%100 / 100.0 * 3;
+            ycr = rand()%100 / 100.0 * 3;
+            x = 60;
+            y = 60;
+        }else{
+            xcr = -rand()%100 / 100.0 * 3;
+            ycr = -rand()%100 / 100.0 * 3;
+            x = sysx+20;
+            y = sysy+20;
+        }
+        w = 32;
+        h = 32;
+    }
+    void draw() override{
+        DrawIconEx(TextBullet::DC,x,y,thisIcon,w,h,0,0,DI_NORMAL);
+        x += xcr;
+        y += ycr;
+        if(x <= 40 || y <= 40 || x > sysx + 40 || y > sysy+40)save = false;
+    }
+    void flush() override{
+        thisIcon = LoadIcon((HINSTANCE)shell32,MAKEINTRESOURCE(rand()%256));
     }
 };
-ResourceLock resourceLock;
+HANDLE IconBullet::shell32 = LoadLibrary("SHELL32.DLL");
+
+vector<Bullet*> bullets;
+
 
 Player pl = {0,0,20,20,100,100,100,100,1};
 //extern bool solution2;
@@ -218,6 +250,41 @@ void full_screen(HWND hwnd){
 }
 vector<GString> strings;
 
+#define INIT_CMD "cls & color 0f & mode con cols=128 lines=32"
+
+void CreateASyncPopups(int c,int id,string text,vector<string> & names,vector<thread*> threads,UINT flags){
+    auto f = [&](string id,string text){MessageBox(NULL,text.c_str(),id.c_str(),flags);};
+    for(int i = 0;i < c;++i){
+        string name = "AsyncPopup"+ to_string(id) + to_string(i);
+        std::thread * t = new std::thread(f,name,text);
+        t->detach();
+        threads.push_back(t);
+    }
+}
+
+void DestroyAsyncPopup(vector<string> & names,vector<thread*> threads){
+    for(string & s : names){
+        HWND win = FindWindow(NULL,s.c_str());
+        if(win){
+            PostMessage(win,WM_CLOSE,0,0);
+        }
+    }
+    for(std::thread* t : threads){
+        delete t;
+    }
+}
+
+void WithARanPos(vector<string> & names){
+    for(string & s : names){
+        HWND win = FindWindow(NULL,s.c_str());
+        if(win){
+            RECT rect;
+            GetWindowRect(win,&rect);
+            SetWindowPos(win,0,rand()%sysx,rand()%sysy,rect.right - rect.left,rect.bottom - rect.top,0);
+        }
+    }
+}
+
 void Disable(){
     //设置控制台，禁用编辑
     auto hStdin = ::GetStdHandle(STD_INPUT_HANDLE);
@@ -231,35 +298,105 @@ void Disable(){
     SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE),&ci);
 }
 void * game(void *){
-    cck::Clock clk,tw;
+    int stageMSec[] = {60000,90000};
+    int stageCounter = 0,initChecker = -1;
+    cck::Clock clk,tw,click,stage;
+    clk.GetOffset();
+    tw.GetOffset();
+    click.GetOffset();
+    stage.GetOffset();
     string show;
+    unsigned int tick = 0;
+    LONG l_WinStyle = GetWindowLong(gameWin,GWL_STYLE);
     while(true){
-        if(IsAKeyPressed(VK_ESCAPE)){
-            break;
-        }else if(IsAKeyPressed('W')){
-            if(pl.y - sysy/200 * pl.speed > 80){
-                pl.y -= sysy/200 * pl.speed;
-                SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
+        if(stage.Now().offset >= stageMSec[stageCounter]){
+            stageCounter++;//下一阶段
+        }
+        if(initChecker != stageCounter){
+            initChecker = stageCounter;
+            clk.Pause();
+            tw.Pause();
+            click.Pause();
+            stage.Pause();
+            switch(stageCounter){
+            case 0:
+                break;
+            case 1:
+                music.stop();
+                ShowWindow(gameWin,SW_SHOW);
+                ShowWindow(heart,SW_HIDE);
+                full_screen(gameWin);
+                SetWindowPos(gameWin, HWND_TOP, 0, 0, sysx, sysy, 0);
+                Disable();
+                SetColor(CL_RED);
+                EasyDelay(strings + 45,10);
+                if(pl.hp > 100){
+                    EasyDelay(strings + 49,10);
+                    exit(0x114514);
+                }else if(pl.hp == 100){
+                    EasyDelay(strings + 50,10);
+                }else if(pl.hp < 100 && pl.hp >= 80){
+                    EasyDelay(strings + 46,10);
+                }else if(pl.hp < 80 && pl.hp >= 40){
+                    EasyDelay(strings + 47,10);
+                }else if(pl.hp < 40){
+                    EasyDelay(strings + 48,10);
+                }
+                EasyDelay(strings + 51,10);
+                SetColor();
+                Sleep(1000);
+                ShowWindow(heart,SW_SHOW);
+                ShowWindow(gameWin,SW_SHOW);
+                SetWindowLong(gameWin,GWL_STYLE,l_WinStyle);
+                system(INIT_CMD);
+                /*{
+                    vector<string> names;
+                    vector<thread*> ts;
+                    CreateASyncPopups(32,114514,"Fatal Errror!!!",names,ts,MB_OK | MB_ICONERROR | MB_TOPMOST);
+                    WithARanPos(names);
+                    Sleep(3200);
+                    DestroyAsyncPopup(names,ts);
+                }*/
+                MessageBox(NULL,"Thanks for playing,this game is still being developing by aaaaa0ggmc(RokonDreaming)..","Not a Fatal Error",MB_OK);
+                gameStatus = GAME_WIN;
+                break;
+            default:
+                EasyDelay(strings + 44,10);
+                exit(-114514);
             }
-        }else if(IsAKeyPressed('A')){
-            if(pl.x - sysy/200 * pl.speed > 80){
-                pl.x -= sysy/200 * pl.speed;
-                SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
-            }
-        }else if(IsAKeyPressed('S')){
-            if(pl.y + sysy/200 * pl.speed < sysy-pl.h){
-                pl.y += sysy/200 * pl.speed;
-                SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
-            }
-        }else if(IsAKeyPressed('D')){
-            if(pl.x + sysy/200 * pl.speed < sysx-pl.w){
-                pl.x += sysy/200 * pl.speed;
-                SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
+            clk.Resume();
+            tw.Resume();
+            click.Resume();
+            stage.Resume();
+        }
+        if(click.Now().offset >= 10){
+            click.GetOffset();
+            if(IsAKeyPressed(VK_ESCAPE)){
+                break;
+            }else if(IsAKeyPressed('W')){
+                if(pl.y - sysy/200 * pl.speed > 80){
+                    pl.y -= sysy/200 * pl.speed;
+                    SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
+                }
+            }else if(IsAKeyPressed('A')){
+                if(pl.x - sysy/200 * pl.speed > 80){
+                    pl.x -= sysy/200 * pl.speed;
+                    SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
+                }
+            }else if(IsAKeyPressed('S')){
+                if(pl.y + sysy/200 * pl.speed < sysy-pl.h){
+                    pl.y += sysy/200 * pl.speed;
+                    SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
+                }
+            }else if(IsAKeyPressed('D')){
+                if(pl.x + sysy/200 * pl.speed < sysx-pl.w){
+                    pl.x += sysy/200 * pl.speed;
+                    SetWindowPos(heart,HWND_TOPMOST,(int)pl.x,(int)pl.y,(int)pl.w,(int)pl.h,0);
+                }
             }
         }
         if(clk.Now().offset >= 10){
-            clk.Stop();
-            clk.Start();
+            clk.GetOffset();
             {
                 vector<Bullet*> tmp;
                 for(Bullet* b : bullets){
@@ -273,21 +410,26 @@ void * game(void *){
                 bullets = tmp;
             }
         }
-        if(tw.Now().offset >= 1200){
-            tw.Stop();
-            tw.Start();
+        if(tw.Now().offset >= 100){
+            tw.GetOffset();
+            ++tick;
             bullets.push_back(new TextBullet());
+            if(tick % 4 == 0){
+                bullets.push_back(new IconBullet());
+            }
             for(Bullet* b : bullets){
                 b->flush();
             }
         }
+        if(gameStatus == GAME_WIN)break;
         if(pl.hp <= 0){
+            config.deathTime ++;
             gameStatus = GAME_OVER;
             break;
         }
         show = "HP:";
         show += to_string((int)pl.hp) + "/" + to_string((int)pl.maxHp);
-        TextOut(TextBullet::DC,0,0,show.c_str(),show.size());
+        TextOut(TextBullet::DC,pl.x - 16,pl.y - 16,show.c_str(),show.size());
 
     }
     if(gameStatus == GAME_OVER){
@@ -321,12 +463,13 @@ void * game(void *){
             tmp.push_back(code);
         }
         system("color f0");
-        sleept = 10;
+        music.setPitch(0.6);
         for(GString& str : tmp){
-            sout << str << endl;
-            fnss(0,0,tmp);
+            sout << str;
+            Sleep(1);
         }
     }
+    ShowWindow(gameWin,SW_SHOW);
     PostMessage(heart,WM_COMMAND,1,0);
     return NULL;
 }
@@ -337,7 +480,7 @@ int main()
 {
     //不是伪随机！
     srand(time(0));
-    system("cls & color 0f & mode con cols=128 lines=32");
+    system(INIT_CMD);
     gameWin = GetConsoleWindow();
     SetWindowText(gameWin,"Errtale");
     {
@@ -376,16 +519,16 @@ int main()
     }
     //Read config
     {
-        int lang = 0;
+        int & lang = config.lang;
         gifstream ifs(CON);
         if(ifs.good() && !ifs.eof()){
             ifs >> lang;
+            ifs >> config.deathTime;
             ifs.close();
             if(lang == 1)ifs.open(CN);
             else ifs.open(EN);
         }else{
             ifs.close();
-            gofstream ofs(CON);
             //Choose a language
             while(true){
                 bool good = true;
@@ -412,8 +555,6 @@ int main()
                 clrscr();
             }
             clrscr();
-            ofs << lang;
-            ofs.close();
         }
         //if(lang != 2)solution2 = true;
         GString l;
@@ -430,23 +571,51 @@ int main()
     SetWindowLong(gameWin,GWL_STYLE,GetWindowLong(gameWin,GWL_STYLE) & ~WS_SIZEBOX & ~WS_MAXIMIZEBOX & ~WS_MINIMIZEBOX);
     Sleep(1000);
     if(IsKeyPressed(VK_SHIFT) != TRUE){
-        sleept = 5;
-        clrscr();
-        SwapPrint(subvec(strings,0,10),fnxx);
-        Sleep(1000);
-        clrscr();
-        music.play();
-        sleept = 200;
-        EasyPrint(subvec(strings,11,19),fndd,fnxx);
-        Sleep(4500);
-        clrscr();
-        SetColor(CL_RED);
-        sleept = 40;
-        EasyPrint(subvec(strings,20,23),fnss,fnxx);
-        Sleep(800);
-        clrscr();
-        SetColor();
-        music.stop();
+        if(config.deathTime == 0){
+            sleept = 5;
+            clrscr();
+            SwapPrint(subvec(strings,0,10),fnxx);
+            Sleep(1000);
+            clrscr();
+            music.play();
+            sleept = 200;
+            EasyPrint(subvec(strings,11,19),fndd,fnxx);
+            Sleep(4500);
+            clrscr();
+            SetColor(CL_RED);
+            sleept = 40;
+            EasyPrint(subvec(strings,20,23),fnss,fnxx);
+            Sleep(800);
+            clrscr();
+            SetColor();
+            music.stop();
+        }else if(config.deathTime < 0){
+            config.deathTime = 999999999;
+            SetColor(CL_RED);
+            EasyDelay(strings + 28,30);
+            cout << endl;
+            EasyDelay(strings + 29,30);
+            SetColor();
+            Sleep(400);
+            clrscr();
+        }else if(config.deathTime >= 99999999){
+            SetColor(CL_RED);
+            EasyDelay(strings + 30,30);
+            cout << endl;
+            EasyDelay(strings + 31,30);
+            SetColor();
+            Sleep(400);
+            clrscr();
+        }else if(config.deathTime <= 6){
+            int & offset = config.deathTime;
+            SetColor(CL_RED);
+            EasyDelay(strings + (30+offset*2),30);
+            cout << endl;
+            EasyDelay(strings + (30+offset*2+1),30);
+            SetColor();
+            Sleep(400);
+            clrscr();
+        }
     }
     sleept = 50;
     EasyPrint(subvec(strings,24,24),fnxx);
@@ -481,3 +650,15 @@ int main()
         //TerminateProcess(GetModuleHandle(NULL),0);
     }
 }
+
+
+struct ResourceLock{
+    ~ResourceLock(){
+        for(Bullet * b : bullets)delete b;
+        gofstream ofs(CON);
+        ofs << config.lang << endl << config.deathTime;
+        ofs.close();
+        FreeLibrary((HMODULE)IconBullet::shell32);
+    }
+};
+ResourceLock resourceLock;

@@ -9,14 +9,14 @@
 	"opencb.h"
 	"Generic.h"
 
-1664672862 e:\projects\coc++\errtale\errtale\opencb.h
+1664694791 e:\projects\coc++\errtale\errtale\opencb.h
 	<windows.h>
 	<iostream>
 	<vector>
 	<string>
 	"Generic.h"
 
-1664672862 source:e:\projects\coc++\errtale\errtale\opencb.cpp
+1664694829 source:e:\projects\coc++\errtale\errtale\opencb.cpp
 	"opencb.h"
 
 1525812018 e:\projects\comps\sfml-2.5.1\include\sfml\audio.hpp

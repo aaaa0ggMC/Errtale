@@ -40,6 +40,7 @@ namespace opencb{
         void SwapPrint(vector<GString>,fn xNew=NULL,fn yNew=NULL);
         void SwapPrintEx(vector<vector<GString>>,fn xNew=NULL,fn yNew=NULL);
         void EasyPrint(vector<GString>,fn xNew = NULL,fn yNew = NULL);
+        void EasyDelay(GString s,int milli);
         void clrscr();
     }
 }

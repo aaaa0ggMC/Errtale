@@ -91,6 +91,14 @@ void opencb::io::EasyPrint(vector<GString> d,fn xNew,fn yNew){
 }
 
 
+void opencb::io::EasyDelay(GString s,int milli){
+    for(gchar& c : s){
+        sout << c;
+        Sleep(milli);
+    }
+}
+
+
 void opencb::io::clrscr(){
 	COORD coordScreen = { 0, 0 };
 	DWORD cCharsWritten;
